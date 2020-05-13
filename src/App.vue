@@ -4,8 +4,8 @@
       {{ displayTime }}
     </div>
     <div id="stopwatch-controls">
-      <button id="reset-and-lap">
-        Reset
+      <button id="reset-and-lap" @click="resetAndLapHandler">
+        {{ (isStarted && !isStopped) ? 'Lap' : 'Reset' }}
       </button>
       <button id="start-and-stop" @click="startAndStopHandler" :class="{ red: (isStarted && !isStopped) }">
         {{ (isStarted && !isStopped) ? 'Stop' : 'Start' }}
@@ -66,6 +66,18 @@ export default {
 
         this.isStopped = false
       }
+    },
+    resetAndLapHandler() {
+      if (this.isStarted && this.isStopped) {
+        this.displayTime = '00:00.0'
+        this.timer = null
+        this.startTime = null
+        this.stopTime = null
+        this.stoppedTimeOffset = 0
+        this.currentTime = null
+        this.isStarted = false
+        this.isStopped = false
+      } 
     },
     formatTime(seconds) {
       let date = new Date(null)
