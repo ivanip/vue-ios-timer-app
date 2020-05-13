@@ -13,8 +13,8 @@
       <span id="brand">Stopwatch</span>
     </div>
     <ul id="stopwatch-records">
-      <li v-for="(lap, index) in laps" :key="index">
-        <span>Lap {{ (index + 1) }}</span>
+      <li :class="{ red: lap.isSlowest, green: lap.isFastest }" v-for="(lap, index) in lapsRecords" :key="index">
+        <span>Lap {{ lapsRecords.length - index }}</span>
         <span>{{ lap.display }}</span>
       </li>
     </ul>
@@ -26,7 +26,7 @@ export default {
   name: 'App',
   data() {
     return {
-      displayTime: '00:00.0',
+      displayTime: '00:00.00',
       timer: null,
       startTime: null,
       stopTime: null,
@@ -37,6 +37,56 @@ export default {
       isStopped: false,
       laps: [],
       lastLapTime: null,
+    }
+  },
+  watch: {
+    displayTime() {
+      let lapsClone = [...this.laps]
+
+      let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
+      let lapTime = (elapsedTime / 1000).toFixed(2)
+
+      lapsClone[this.laps.length - 1] = {
+        time: parseFloat(lapTime),
+        display: this.formatTime(lapTime),
+        isFastest: false,
+        isSlowest: false,
+      }
+
+      this.laps = lapsClone
+    }
+  },
+  computed: {
+    lapsRecords() {
+      let lapsClone = [...this.laps]
+
+      if (lapsClone.length > 2) {
+        lapsClone = lapsClone.map((oneLap) => {
+          return {
+            ...oneLap,
+            isFastest: false,
+            isSlowest: false,
+          }
+        })
+
+        let fastestIndex = 0
+        let slowestIndex = 0
+
+        for (let i = 0; i < lapsClone.length; i++) {
+          if (lapsClone[i].time < lapsClone[fastestIndex].time) {
+            fastestIndex = i
+          }
+
+          if (lapsClone[i].time > lapsClone[slowestIndex].time) {
+            slowestIndex = i
+          }
+        }
+
+        lapsClone[fastestIndex].isFastest = true
+        lapsClone[slowestIndex].isSlowest = true
+      }
+
+      return lapsClone.reverse()
     }
   },
   methods: {
@@ -53,7 +103,15 @@ export default {
           this.displayTime = this.formatTime((elapsedTime / 1000).toFixed(2))
         }, 10)
 
+        this.laps = [{
+          time: 0,
+          display: this.displayTime,
+          isFastest: false,
+          isSlowest: false,
+        }]
+
         this.isStarted = true
+        this.isStopped = false
       } else if (this.isStarted && !this.isStopped) {
         clearInterval(this.timer)
         this.stopTime = Date.now()
