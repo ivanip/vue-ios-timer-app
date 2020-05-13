@@ -13,9 +13,9 @@
       <span id="brand">Stopwatch</span>
     </div>
     <ul id="stopwatch-records">
-      <li>
-        <span>Lap 1</span>
-        <span>00:01.23</span>
+      <li v-for="(lap, index) in laps" :key="index">
+        <span>Lap {{ (index + 1) }}</span>
+        <span>{{ lap.display }}</span>
       </li>
     </ul>
   </div>
@@ -31,9 +31,12 @@ export default {
       startTime: null,
       stopTime: null,
       stoppedTimeOffset: 0,
+      stoppedTimeOffsetForLap: 0,
       currentTime: null,
       isStarted: false,
       isStopped: false,
+      laps: [],
+      lastLapTime: null,
     }
   },
   methods: {
@@ -41,6 +44,7 @@ export default {
 
       if (!this.isStarted) {
         this.startTime = Date.now()
+        this.lastLapTime = Date.now()
 
         this.timer = setInterval(() => {
           this.currentTime = Date.now()
@@ -56,6 +60,7 @@ export default {
         this.isStopped = true
       } else if (this.isStarted && this.isStopped) {
         this.stoppedTimeOffset += Date.now() - this.stopTime
+        this.stoppedTimeOffsetForLap += Date.now() - this.stopTime
         
         this.timer = setInterval(() => {
           this.currentTime = Date.now()
@@ -77,7 +82,23 @@ export default {
         this.currentTime = null
         this.isStarted = false
         this.isStopped = false
-      } 
+
+        this.stoppedTimeOffsetForLap = 0
+        this.laps = []
+        this.lastLapTime = null
+
+      } else if (this.isStarted && !this.isStopped) {
+        let elapsedTime = this.currentTime - this.lastLapTime - this.stoppedTimeOffsetForLap
+        let lapTime = (elapsedTime / 1000).toFixed(2)
+
+        this.laps.push({
+          time: parseFloat(lapTime),
+          display: this.formatTime(lapTime)
+        })
+
+        this.lastLapTime = this.currentTime
+        this.stoppedTimeOffsetForLap = 0
+      }
     },
     formatTime(seconds) {
       let date = new Date(null)
