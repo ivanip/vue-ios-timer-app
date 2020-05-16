@@ -1,16 +1,21 @@
 <template>
   <div id="app">
-    <div id="stopwatch">
-      {{ displayTime }}
-    </div>
+    <timer :time="displayTime" />
+
     <div id="stopwatch-controls">
-      <button id="reset-and-lap" @click="resetAndLapHandler">
-        {{ (isStarted && !isStopped) ? 'Lap' : 'Reset' }}
-      </button>
-      <button id="start-and-stop" @click="startAndStopHandler" :class="{ red: (isStarted && !isStopped) }">
-        {{ (isStarted && !isStopped) ? 'Stop' : 'Start' }}
-      </button>
-      <span id="brand">Stopwatch</span>
+      <reset-and-lap-button
+        @pressed="resetAndLapHandler"
+        :started="isStarted"
+        :stopped="isStopped"
+      />
+      
+      <start-and-stop-button
+        @pressed="startAndStopHandler"
+        :started="isStarted"
+        :stopped="isStopped"
+      />
+
+      <brand>My Awesome Timer</brand>
     </div>
     <ul id="stopwatch-records">
       <li :class="{ red: lap.isSlowest, green: lap.isFastest }" v-for="(lap, index) in lapsRecords" :key="index">
@@ -22,8 +27,19 @@
 </template>
 
 <script>
+import Timer from './Timer.vue'
+import Brand from './Brand.vue'
+import StartAndStopButton from './StartAndStopButton.vue'
+import ResetAndLapButton from './ResetAndLapButton.vue'
+
 export default {
   name: 'App',
+  components: {
+    Timer,
+    Brand,
+    StartAndStopButton,
+    ResetAndLapButton,
+  },
   data() {
     return {
       displayTime: '00:00.00',
@@ -182,14 +198,6 @@ export default {
   color: #fff;
 }
 
-#stopwatch {
-  flex: 0px 1 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 5rem;
-}
-
 #stopwatch-records {
   flex: 0px 1 1;
 }
@@ -234,38 +242,5 @@ export default {
   overflow: hidden;
   position: relative;
   margin-bottom: 1.5rem;
-}
-
-#brand {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-50%) translateY(-50%);
-}
-
-button#reset-and-lap, button#start-and-stop {
-  width: 80px;
-  height: 80px;
-  outline: none;
-  background-color: #333;
-  border: 2px solid #000;
-  border-radius: 100%;
-  color: #fff;
-  font-size: 1rem;
-  box-shadow: 0px 0px 0px 2px #333;
-  float: left;
-}
-
-button#start-and-stop {
-  background-color: #082A12;
-  box-shadow: 0px 0px 0px 2px #082A12;
-  color: #2ED158;
-  float: right;
-}
-
-button#start-and-stop.red {
-  background-color: #320E0B;
-  box-shadow: 0px 0px 0px 2px #320E0B;
-  color: #FF453A;
 }
 </style>
